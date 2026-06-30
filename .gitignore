@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+.env
+.DS_Store
+tmp/
+artifacts/investigations/*
+!artifacts/investigations/.gitkeep
+# Fetched at bootstrap — not part of this repo (and may include unreleased RHOAI context)
+.context/
+# Local-only test inputs: real Jira epics with internal/confidential content
+samples/

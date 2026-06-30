@@ -1,0 +1,8 @@
+{
+  "name": "epic-investigator",
+  "description": "Run Investigation-type epics to ground their gated sibling epics with tiered evidence (desk / local-process / deferred), then write a status report back to the epic.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Jessica Forrester"
+  }
+}
