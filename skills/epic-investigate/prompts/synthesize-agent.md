@@ -26,9 +26,25 @@ team deciding whether the gated siblings proceed.
 
 3. Write `REPORT_OUT` body:
    - **Summary** — the recommendation and the one or two findings that drove it.
+     Note that full per-question evidence lives in the companion
+     `<KEY>-investigation-details.md` (attached alongside this report); point
+     the reader there **once**, here — do not repeat the pointer per question.
    - **Findings table** — one row per question: Q#, answer, tier, confidence,
      one-line basis.
-   - **Per-question detail** — pull each finding's evidence through.
+   - **Per-question detail** — pull each finding's evidence through, and
+     **preserve its concrete evidence anchors verbatim**: file:line references,
+     commit hashes, config keys / env vars, endpoints, and the key measured
+     values. Do **not** paraphrase an anchor away — keep the exact
+     `file:line` / config-key / value the finding cited, not a prose gloss of it.
+     Every claim must be verifiable from the report alone. What you leave to the
+     details file is the
+     *bulk*, not the anchors: raw command-output dumps, the full remedy-rung
+     elimination prose, and step-by-step deferred specs. Also carry each
+     finding's `### Validation` verdict through — its verdict word (`upheld`,
+     `downgraded`, or `rejected`) **and** the validator's one-line reason, which
+     is where any caveat on an otherwise-`upheld` finding lives. Surfacing it
+     makes a caveat that an adversarial check forced distinguishable from one the
+     investigator volunteered.
    - **Deferred work** — collect every Tier-2 spec so a cluster owner can run
      them, with the reason each was deferred.
    - **Impact on gated epics** — per sibling: proceed / adjust (how) / hold.
