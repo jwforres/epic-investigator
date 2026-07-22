@@ -144,6 +144,22 @@ REPORT_OUT=artifacts/investigations/<KEY>-investigation.md
 Read skills/epic-investigate/prompts/synthesize-agent.md and follow it exactly.
 ```
 
+### Phase 4b · BUILD DETAILS
+
+Concatenate the validated per-question findings into the companion evidence
+file. This is a mechanical copy (no re-synthesis) so citations and captured
+output survive verbatim:
+
+```bash
+python3 scripts/build_details.py <KEY> --data-dir <data-dir>
+```
+
+Pass the same `--data-dir` resolved at Setup (defaults to `artifacts`). This
+writes `<data-dir>/investigations/<KEY>-investigation-details.md` — the full
+proof behind the report's per-question summaries. If the investigation produced
+no findings (e.g. blocked/errored), it writes nothing and warns; that is not a
+failure — continue to publish.
+
 ### Phase 5 · PUBLISH
 
 Unless `--no-jira`:
@@ -154,7 +170,9 @@ python3 scripts/attach_report.py <KEY> \
 ```
 
 This attaches the report as the well-known `investigation-report.md` and applies
-the status label. Skip for `--from-file` inputs without a real Jira key.
+the status label. When the companion `<KEY>-investigation-details.md` is present
+next to the report (Phase 4b), it is attached too as `investigation-details.md`.
+Skip for `--from-file` inputs without a real Jira key.
 
 ## Teardown
 

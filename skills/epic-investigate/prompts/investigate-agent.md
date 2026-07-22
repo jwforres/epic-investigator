@@ -82,7 +82,12 @@ or honestly defer it. Never fabricate a result.
    it isn't a cheaper one. This keeps a negative from over-scoping downstream work
    (a config toggle mis-reported as "needs custom code" costs real sprints).
 
-4. Write `FINDING_OUT` with this shape:
+4. Write `FINDING_OUT`. The **required core** below must always be present, with
+   these exact heading names (so synthesis and the concatenated details file can
+   rely on them). You are **free to add** further sub-sections when the question
+   warrants — e.g. `### What failed`, a live-discovered gotcha, `### Source
+   URLs / file refs`, a per-item workaround table. Add what makes the finding
+   clearer; never drop or rename a required section to make room.
 
    ```
    ## Q<NN>: <verbatim question>
@@ -93,11 +98,17 @@ or honestly defer it. Never fabricate a result.
 
    ### Evidence
    <citations: file:line, commit, URL, and/or captured command output in fenced
-   blocks. Every claim in the Answer must trace to something here.>
+   blocks. Every claim in the Answer must trace to something here. These anchors
+   are load-bearing — synthesis carries them verbatim into the report, so cite
+   the specific file:line / config key / endpoint / measured value, not a vague
+   "the docs say".>
 
-   ### Deferred spec  (only if tier == deferred)
+   ### Deferred spec  (only if a sub-part's tier == deferred)
    <exact steps/thresholds to run the real check on a cluster or with containers>
    ```
+
+   The `### Validation` section is appended later by the validate agent — do not
+   write it yourself.
 
 ## Rules
 - The Answer must be fully supported by the Evidence section. If evidence is
