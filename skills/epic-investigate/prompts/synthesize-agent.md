@@ -62,6 +62,14 @@ team deciding whether the gated siblings proceed.
        run_completed=$(python3 scripts/state.py timestamp)
    ```
 
+   - `status=complete` requires exactly one finding file per question
+     (`questions_resolved == questions_total`, and `questions_total` = the number
+     of questions in the plan). If any question's finding is missing or empty (a
+     dead investigate agent), set `status=error`, set `error` to name the missing
+     question(s), and set `questions_resolved` to the actual count — do **not**
+     stamp `complete`. (`attach_report.py` also rejects a `complete` report whose
+     `questions_resolved != questions_total`, so an inconsistent run cannot be
+     published as complete.)
    - Set `status=blocked` (instead of `complete`) only if a gating question
      could not be resolved at all and the recommendation is forced to `no-go`
      for lack of evidence rather than negative evidence.

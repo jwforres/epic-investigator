@@ -115,6 +115,12 @@ Read skills/epic-investigate/prompts/investigate-agent.md and follow it exactly.
 
 Wait for all to finish before continuing.
 
+**Completeness check.** After the agents finish, confirm there is exactly one
+non-empty `<KEY>-q<NN>.md` for every question `1..N`. If any is missing or empty
+(a dead or crashed agent), the run did **not** cover the epic: carry the gap
+forward so synthesis stamps `status=error` (never `complete`) and names the
+missing question(s). Do not silently proceed as if `N` findings existed.
+
 ### Phase 3 · VALIDATE (1 agent)
 
 Launch one `validate-agent` to adversarially re-check every finding against its
