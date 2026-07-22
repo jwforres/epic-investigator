@@ -41,7 +41,9 @@ Parse `$ARGUMENTS` for:
 - Explicit Jira epic keys (e.g. `RHAISTRAT-1234-E001`)
 - `--from-file <path>` — ingest a local epic-task file instead of Jira
 - `--no-jira` — write the report locally but do not publish to the epic
-- `--data-dir <path>` — defaults to `artifacts`
+- `--artifacts-dir <path>` — the artifacts root, defaults to `artifacts`. All
+  outputs go under `<artifacts-dir>/investigations/`. In the paths below,
+  `<artifacts-dir>` is this resolved value.
 
 ### Init
 
@@ -67,10 +69,12 @@ and note the absence in their findings.
 For each key (or the `--from-file` source):
 
 ```bash
-python3 scripts/fetch_epic.py <KEY>            # or: --from-file <path>
+# fetch by key, or ingest a local epic-task file with --from-file <path> instead
+# of <KEY>; keep --artifacts-dir on either form.
+python3 scripts/fetch_epic.py <KEY> --artifacts-dir <artifacts-dir>
 ```
 
-This writes `artifacts/investigations/<KEY>-input.md`. Read it. The body holds
+This writes `<artifacts-dir>/investigations/<KEY>-input.md`. Read it. The body holds
 the Scope (numbered questions), Acceptance Criteria, and HLR Traceability.
 
 Identify the **gated sibling epics**: the epics whose `gated_by` points at this
@@ -86,8 +90,8 @@ Run these phases in order for each epic. Persist progress to
 Launch one `classify-agent`:
 
 ```
-INPUT=artifacts/investigations/<KEY>-input.md
-PLAN_OUT=artifacts/investigations/<KEY>-plan.md
+INPUT=<artifacts-dir>/investigations/<KEY>-input.md
+PLAN_OUT=<artifacts-dir>/investigations/<KEY>-plan.md
 
 Read skills/epic-investigate/prompts/classify-agent.md and follow it exactly.
 ```
@@ -98,13 +102,13 @@ the question count `N`.
 ### Phase 2 · INVESTIGATE (N agents, parallel)
 
 Launch one `investigate-agent` **per question**, concurrently (multiple Agent
-calls in one message). Each writes `artifacts/investigations/<KEY>-q<NN>.md`:
+calls in one message). Each writes `<artifacts-dir>/investigations/<KEY>-q<NN>.md`:
 
 ```
-INPUT=artifacts/investigations/<KEY>-input.md
-PLAN=artifacts/investigations/<KEY>-plan.md
+INPUT=<artifacts-dir>/investigations/<KEY>-input.md
+PLAN=<artifacts-dir>/investigations/<KEY>-plan.md
 QUESTION_NUM=<NN>
-FINDING_OUT=artifacts/investigations/<KEY>-q<NN>.md
+FINDING_OUT=<artifacts-dir>/investigations/<KEY>-q<NN>.md
 
 Read skills/epic-investigate/prompts/investigate-agent.md and follow it exactly.
 ```
@@ -117,8 +121,8 @@ Launch one `validate-agent` to adversarially re-check every finding against its
 cited evidence and downgrade anything unsupported:
 
 ```
-INPUT=artifacts/investigations/<KEY>-input.md
-FINDINGS_GLOB=artifacts/investigations/<KEY>-q*.md
+INPUT=<artifacts-dir>/investigations/<KEY>-input.md
+FINDINGS_GLOB=<artifacts-dir>/investigations/<KEY>-q*.md
 Read skills/epic-investigate/prompts/validate-agent.md and follow it exactly.
 ```
 
@@ -137,10 +141,10 @@ frontmatter (status, recommendation, rollup counts) via
 `scripts/frontmatter.py`:
 
 ```
-INPUT=artifacts/investigations/<KEY>-input.md
-FINDINGS_GLOB=artifacts/investigations/<KEY>-q*.md
+INPUT=<artifacts-dir>/investigations/<KEY>-input.md
+FINDINGS_GLOB=<artifacts-dir>/investigations/<KEY>-q*.md
 GATED_EPICS=<comma-separated sibling ids>
-REPORT_OUT=artifacts/investigations/<KEY>-investigation.md
+REPORT_OUT=<artifacts-dir>/investigations/<KEY>-investigation.md
 Read skills/epic-investigate/prompts/synthesize-agent.md and follow it exactly.
 ```
 
@@ -151,14 +155,13 @@ file. This is a mechanical copy (no re-synthesis) so citations and captured
 output survive verbatim:
 
 ```bash
-python3 scripts/build_details.py <KEY> --data-dir <data-dir>
+python3 scripts/build_details.py <KEY> --artifacts-dir <artifacts-dir>
 ```
 
-Pass the same `--data-dir` resolved at Setup (defaults to `artifacts`). This
-writes `<data-dir>/investigations/<KEY>-investigation-details.md` — the full
-proof behind the report's per-question summaries. If the investigation produced
-no findings (e.g. blocked/errored), it writes nothing and warns; that is not a
-failure — continue to publish.
+This writes `<artifacts-dir>/investigations/<KEY>-investigation-details.md` —
+the full proof behind the report's per-question summaries. If the investigation
+produced no findings (e.g. blocked/errored), it writes nothing and warns; that
+is not a failure — continue to publish.
 
 ### Phase 5 · PUBLISH
 
@@ -166,7 +169,7 @@ Unless `--no-jira`:
 
 ```bash
 python3 scripts/attach_report.py <KEY> \
-    --report artifacts/investigations/<KEY>-investigation.md
+    --report <artifacts-dir>/investigations/<KEY>-investigation.md
 ```
 
 This attaches the report as the well-known `investigation-report.md` and applies

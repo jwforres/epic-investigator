@@ -13,10 +13,10 @@ citations and captured output survive verbatim. Attach it alongside the report
 so anyone (human or a downstream agent) can inspect the proof behind a verdict.
 
     python3 scripts/build_details.py RHAISTRAT-1234-E001
-    python3 scripts/build_details.py RHAISTRAT-1234-E001 --data-dir artifacts
+    python3 scripts/build_details.py RHAISTRAT-1234-E001 --artifacts-dir artifacts
 
-Writes `<data-dir>/investigations/<KEY>-investigation-details.md` and prints its
-path. If there are no finding files (e.g. a blocked/errored investigation),
+Writes `<artifacts-dir>/investigations/<KEY>-investigation-details.md` and prints
+its path. If there are no finding files (e.g. a blocked/errored investigation),
 it writes nothing and warns — publishing still proceeds without a details file.
 """
 
@@ -86,11 +86,11 @@ def main():
     ap = argparse.ArgumentParser(
         description="Concatenate per-question findings into the details file")
     ap.add_argument("key", help="Investigation epic key (e.g. RHAISTRAT-1234-E001)")
-    ap.add_argument("--data-dir", default="artifacts",
+    ap.add_argument("--artifacts-dir", default="artifacts",
                     help="Artifacts root (default: artifacts)")
     args = ap.parse_args()
 
-    investigations_dir = os.path.join(args.data_dir, "investigations")
+    investigations_dir = os.path.join(args.artifacts_dir, "investigations")
     out_path, n = build_details(investigations_dir, args.key)
     if out_path is None:
         # A blocked/errored investigation may legitimately have no findings;

@@ -9,9 +9,10 @@ Two input paths:
     # Local-dev path — ingest an epic-task markdown file produced by epic-creator
     python3 scripts/fetch_epic.py --from-file ../epic-creator/artifacts/epic-tasks/RHAISTRAT-1234-E001.md
 
-Either way the epic is written to artifacts/investigations/<KEY>-input.md with
-epic-task frontmatter and the description body (Scope / questions / acceptance
-criteria) preserved. The investigate skill reads that body.
+Either way the epic is written to <artifacts-dir>/investigations/<KEY>-input.md
+(default `artifacts/investigations/`) with epic-task frontmatter and the
+description body (Scope / questions / acceptance criteria) preserved. The
+investigate skill reads that body.
 
 Only epics of type Investigation are accepted — Implementation epics are
 rejected so CI doesn't waste a run.
@@ -29,7 +30,8 @@ from artifact_utils import (
 )
 import jira_utils
 
-OUT_DIR = "artifacts/investigations"
+DEFAULT_ARTIFACTS_DIR = "artifacts"
+INVESTIGATIONS_SUBDIR = "investigations"
 _STRAT_RE = re.compile(r"RHAISTRAT-\d+")
 
 
@@ -101,8 +103,12 @@ def main():
     ap.add_argument("key", nargs="?", help="Jira epic key, e.g. RHAISTRAT-1234-E001")
     ap.add_argument("--from-file", help="Ingest a local epic-task markdown file")
     ap.add_argument("--parent-strat", help="Override parent strategy (RHAISTRAT-NNNN)")
-    ap.add_argument("--out-dir", default=OUT_DIR)
+    ap.add_argument("--artifacts-dir", default=DEFAULT_ARTIFACTS_DIR,
+                    help="Artifacts root; input is written to "
+                    "<artifacts-dir>/investigations/ (default: artifacts)")
     args = ap.parse_args()
+
+    out_dir = os.path.join(args.artifacts_dir, INVESTIGATIONS_SUBDIR)
 
     if args.from_file:
         meta, body = _ingest_file(args.from_file)
@@ -114,8 +120,8 @@ def main():
     if meta.get("type") != "Investigation":
         meta["type"] = "Investigation"
 
-    out_path = os.path.join(args.out_dir, f"{meta['epic_id']}-input.md")
-    os.makedirs(args.out_dir, exist_ok=True)
+    out_path = os.path.join(out_dir, f"{meta['epic_id']}-input.md")
+    os.makedirs(out_dir, exist_ok=True)
     # Seed the file with the raw body (no frontmatter delimiters); a file with
     # no frontmatter is read as all-body, so write_frontmatter then prepends the
     # validated frontmatter while preserving the body intact.
