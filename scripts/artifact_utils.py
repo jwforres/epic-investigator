@@ -216,6 +216,16 @@ SCHEMAS = {
             "required": False,
             "default": 0,
         },
+        # Questions whose gating answer rests on deferred/unverified evidence —
+        # a provisional answer, not a resolved one. Distinct from
+        # `questions_resolved` (which counts questions that produced a finding at
+        # all); surfaced so a reader can see how much of a recommendation is
+        # still unproven rather than reading "N/N resolved" as "N/N verified".
+        "questions_provisional": {
+            "type": "int",
+            "required": False,
+            "default": 0,
+        },
         # Evidence tiers actually exercised: any of "desk", "local-process",
         # "deferred".
         "evidence_tiers_used": {

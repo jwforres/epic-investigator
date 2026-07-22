@@ -133,12 +133,17 @@ Read skills/epic-investigate/prompts/validate-agent.md and follow it exactly.
 ```
 
 **Re-investigation backstop.** After validation, scan the finding files for any
-`### Validation` verdict of `deferral-not-established`. For each, re-launch a
-single `investigate-agent` for that question (same vars as Phase 2), instructing
-it to read the specific source artifact the validator named rather than stop at
-the digest. Re-run validation on the updated finding. Do this at most once per
-question, then proceed — a still-unresolved deferral stays `deferred` with its
-reason. This is the backstop for a deferral the classifier waved through.
+`### Validation` verdict of `deferral-not-established` or
+`negative-not-established`. For each, re-launch a single `investigate-agent` for
+that question (same vars as Phase 2), instructing it to do what the validator
+named: for `deferral-not-established`, read the specific source artifact rather
+than stop at the digest; for `negative-not-established`, follow the dependency
+seam and check the named dependency/config/plugin before accepting the negative.
+Re-run validation on the updated finding. Do this at most once per question, then
+proceed — a still-unresolved deferral stays `deferred`, and a still-unsupported
+negative keeps its answer, each with its reason recorded. This is the backstop
+for an unearned deferral or over-scoped negative the earlier phases waved
+through.
 
 ### Phase 4 · SYNTHESIZE (1 agent)
 

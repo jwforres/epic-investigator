@@ -15,10 +15,16 @@ team deciding whether the gated siblings proceed.
 1. Read `INPUT` (note `gate_failure_impact` if present) and every finding.
 
 2. Decide the **recommendation** for the gated siblings:
-   - `go` — every gating question is answered affirmatively with solid evidence.
+   - `go` — every gating question is answered affirmatively **with evidence that
+     was actually run/read**. A clean `go` is not available if any gating
+     question's deciding evidence is only provisional (a `PARTIAL`/`DEFERRED`
+     answer whose gating check was not executed) — the most you can say then is
+     `go-with-changes` with the unrun check named as a condition.
    - `go-with-changes` — siblings can proceed but a finding forces a documented
      adjustment (map to the epic's `gate_failure_impact.action` /
-     `fallback_approach` when present). Spell out the change.
+     `fallback_approach` when present), or a gating answer is provisional and its
+     deciding check must be run before production sign-off. Spell out the change
+     or the condition.
    - `no-go` — a gating question came back NO, or a question the siblings depend
      on is unresolved/`DEFERRED` such that proceeding is unsafe.
    Deferred-but-non-blocking questions do not force `no-go`; call them out as
@@ -26,6 +32,12 @@ team deciding whether the gated siblings proceed.
 
 3. Write `REPORT_OUT` body:
    - **Summary** — the recommendation and the one or two findings that drove it.
+     Immediately after the recommendation, add one blunt **"What this rests on"**
+     line for the decision-maker who will anchor on the verdict word: how many
+     answers are provisional (gating evidence deferred/unrun), how many deferred
+     checks remain, and the key unverified assumptions the recommendation depends
+     on. Keep it next to the verdict, not buried in the table — a reader should
+     not have to reconstruct "N of M answers are still unproven" from the rows.
      Note that full per-question evidence lives in the companion
      `<KEY>-investigation-details.md` (attached alongside this report); point
      the reader there **once**, here — do not repeat the pointer per question.
@@ -56,12 +68,18 @@ team deciding whether the gated siblings proceed.
        epic_id=<id> title="<title>" parent_strat=<RHAISTRAT-N> jira_key=<key> \
        status=complete recommendation=<go|go-with-changes|no-go> \
        questions_total=<N> questions_resolved=<n> questions_deferred=<n> \
+       questions_provisional=<p> \
        deferred_to_cluster=<true|false> \
        evidence_tiers_used='["desk","local-process","deferred"]' \
        gated_epics='["<id>", "..."]' \
        run_completed=$(python3 scripts/state.py timestamp)
    ```
 
+   - `questions_resolved` counts questions that produced a finding at all
+     (completeness); `questions_provisional` counts the subset whose **headline
+     answer is `PARTIAL`/`DEFERRED`** because the deciding evidence was not run.
+     Keep them distinct: a run can be `N/N resolved` and still have several
+     provisional answers, and the report must not read as `N/N verified`.
    - `status=complete` requires exactly one finding file per question
      (`questions_resolved == questions_total`, and `questions_total` = the number
      of questions in the plan). If any question's finding is missing or empty (a
