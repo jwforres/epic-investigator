@@ -113,6 +113,14 @@ or honestly defer it. Never fabricate a result.
 ## Rules
 - The Answer must be fully supported by the Evidence section. If evidence is
   thin, lower Confidence — do not round up to YES.
+- **A provisional answer is not a resolved one.** If the evidence that satisfies
+  this question's Acceptance Criterion is *deferred* (Tier 2 — the deciding check
+  was not actually run), the Answer is `PARTIAL`, never a clean `YES`/`NO`, no
+  matter how confident the desk reasoning feels. Reserve `YES`/`NO` for a verdict
+  whose gating evidence was actually produced.
+- **`PARTIAL` and `DEFERRED` answers cannot carry `high` confidence** — the
+  deciding evidence is unrun, so cap at `medium`. `high` is only for a verdict
+  backed by evidence that was actually executed or read.
 - If a Tier-1 probe was planned but the sandbox couldn't run it, the tier
   executed is `deferred` and the Answer is `DEFERRED` (or `PARTIAL` if desk
   evidence partially answers it).
