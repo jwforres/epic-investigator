@@ -48,6 +48,14 @@ renumber questions, and you do **not** expand the investigation.
    bounded. These are recommendations for the report's "Not assessed" section —
    they are **not** added to this investigation.
 
+   Reserve this bucket for **genuinely unposed, out-of-scope** risks. Do **not**
+   divert here anything that is a *facet* of a question the epic already asked, or
+   anything the investigation can answer — that belongs in the investigation and
+   must be answered there, not parked as "not assessed." (E.g. if a question asks
+   whether a needed value is available, "which value / what to set it to" is part
+   of *answering* it, not a separate unknown.) Mis-routing an answerable facet
+   into "not assessed" turns a resolvable question into a hedge.
+
 4. Keep it honest and bounded. If the framing is sound and nothing material is
    missing or mis-stated, say so briefly — a short "no material issues" is a
    valid critique. Do not manufacture problems to look thorough.

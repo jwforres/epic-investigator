@@ -94,6 +94,14 @@ or honestly defer it. Never fabricate a result.
    it isn't a cheaper one. This keeps a negative from over-scoping downstream work
    (a config toggle mis-reported as "needs custom code" costs real sprints).
 
+   Conversely, when an enumerated item is **absent but not a gap** — because it is
+   obtainable another way (a known constant the integrator sets, an existing
+   config, an alternate path) — do **not** stop at the verdict "not a gap." Still
+   give the **constructive answer**: the concrete value to set or the exact
+   mechanism (the config key *and its value* — e.g. the default to use), so the
+   reader gets the *how*, not just the ruling. A "not a gap" that names no value is
+   a regression from a finding that would have told the integrator what to do.
+
 4. Write `FINDING_OUT`. The **required core** below must always be present, with
    these exact heading names (so synthesis and the concatenated details file can
    rely on them). You are **free to add** further sub-sections when the question
