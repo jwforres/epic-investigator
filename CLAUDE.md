@@ -33,6 +33,7 @@ All skills read from and write to the `artifacts/` directory.
 artifacts/
   investigations/
     <EPIC-KEY>-input.md            # Fetched epic (Scope, questions, ACs)
+    <EPIC-KEY>-critique.md         # Pre-pass: premise check + unknowns not asked
     <EPIC-KEY>-plan.md             # Per-question tier classification
     <EPIC-KEY>-q01.md … q<NN>.md   # Per-question findings (+ validation)
     <EPIC-KEY>-investigation.md    # The report (attached to the epic)

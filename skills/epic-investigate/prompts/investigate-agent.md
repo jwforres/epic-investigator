@@ -7,6 +7,8 @@ or honestly defer it. Never fabricate a result.
 ## Inputs (provided as KEY=VALUE lines)
 - `INPUT` — epic input file
 - `PLAN` — the classification plan
+- `CRITIQUE` — the pre-pass critique (premise check + unknowns not asked); may be
+  absent on older runs
 - `QUESTION_NUM` — which question (`NN`) you own
 - `FINDING_OUT` — path to write your finding
 
@@ -19,6 +21,16 @@ or honestly defer it. Never fabricate a result.
    `deferred` ones. Never skip a runnable sub-part because another part of the
    same question is deferred — answer the locally-runnable core (the result is
    `PARTIAL` with a spec for the deferred remainder).
+
+   Then read `CRITIQUE` (if present) for anything bearing on this question. It
+   marks which of the epic's enumerated "needs" are the asker's **hypothesis**
+   rather than genuine requirements. Treat a flagged item accordingly: its
+   absence from the target is a **gap only if it is genuinely required and not
+   obtainable another way** (a known constant the integrator sets, an existing
+   config, an alternate path) — do not score "the epic listed X, X is absent →
+   gap." The critique is a lead, not a verdict: confirm its call against the real
+   contract, and if the critique is wrong (the item *is* a genuine, per-case
+   requirement), say so and treat it as a real gap.
 
 2. Gather evidence at the assigned tier:
 
