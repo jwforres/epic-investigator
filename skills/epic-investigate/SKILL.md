@@ -85,6 +85,26 @@ one (from the parent decomposition), or as named in the epic body. Record them.
 Run these phases in order for each epic. Persist progress to
 `tmp/investigate-state.yaml` so it survives compression.
 
+### Phase 0 · CRITIQUE (1 agent)
+
+Before the questions are classified, challenge the epic's own framing so the run
+answers what actually matters — not just what the epic asked, the way it asked
+it. Launch one `critique-agent`:
+
+```
+INPUT=<artifacts-dir>/investigations/<KEY>-input.md
+CRITIQUE_OUT=<artifacts-dir>/investigations/<KEY>-critique.md
+
+Read skills/epic-investigate/prompts/critique-agent.md and follow it exactly.
+```
+
+It writes `<KEY>-critique.md`: a **premise check** (which enumerated "needs" are
+the asker's hypothesis vs. genuine requirements, so a later agent doesn't score
+an item's absence as a gap when the goal is met another way) and the
+**highest-risk unknowns the epic did not ask**. It is **annotate-only** — it does
+not add, remove, or renumber questions. Phases 2 and 4 consume it. Classification
+(Phase 1) does not — its job is tiering, and its input is unchanged.
+
 ### Phase 1 · CLASSIFY (1 agent)
 
 Launch one `classify-agent`:
@@ -107,6 +127,7 @@ calls in one message). Each writes `<artifacts-dir>/investigations/<KEY>-q<NN>.m
 ```
 INPUT=<artifacts-dir>/investigations/<KEY>-input.md
 PLAN=<artifacts-dir>/investigations/<KEY>-plan.md
+CRITIQUE=<artifacts-dir>/investigations/<KEY>-critique.md
 QUESTION_NUM=<NN>
 FINDING_OUT=<artifacts-dir>/investigations/<KEY>-q<NN>.md
 
@@ -154,6 +175,7 @@ frontmatter (status, recommendation, rollup counts) via
 ```
 INPUT=<artifacts-dir>/investigations/<KEY>-input.md
 FINDINGS_GLOB=<artifacts-dir>/investigations/<KEY>-q*.md
+CRITIQUE=<artifacts-dir>/investigations/<KEY>-critique.md
 GATED_EPICS=<comma-separated sibling ids>
 REPORT_OUT=<artifacts-dir>/investigations/<KEY>-investigation.md
 Read skills/epic-investigate/prompts/synthesize-agent.md and follow it exactly.

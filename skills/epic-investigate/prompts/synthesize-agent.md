@@ -7,6 +7,8 @@ team deciding whether the gated siblings proceed.
 ## Inputs (provided as KEY=VALUE lines)
 - `INPUT` — epic input file
 - `FINDINGS_GLOB` — validated per-question finding files
+- `CRITIQUE` — the pre-pass critique (premise check + unknowns not asked); may be
+  absent on older runs
 - `GATED_EPICS` — comma-separated sibling epic ids this investigation gates
 - `REPORT_OUT` — path to write the report
 
@@ -35,9 +37,11 @@ team deciding whether the gated siblings proceed.
      Immediately after the recommendation, add one blunt **"What this rests on"**
      line for the decision-maker who will anchor on the verdict word: how many
      answers are provisional (gating evidence deferred/unrun), how many deferred
-     checks remain, and the key unverified assumptions the recommendation depends
-     on. Keep it next to the verdict, not buried in the table — a reader should
-     not have to reconstruct "N of M answers are still unproven" from the rows.
+     checks remain, the key unverified assumptions the recommendation depends on,
+     and whether the critique flagged high-risk unknowns the epic never asked
+     (see Not assessed). Keep it next to the verdict, not buried in the table — a
+     reader should not have to reconstruct "N of M answers are still unproven"
+     from the rows.
      Note that full per-question evidence lives in the companion
      `<KEY>-investigation-details.md` (attached alongside this report); point
      the reader there **once**, here — do not repeat the pointer per question.
@@ -59,6 +63,12 @@ team deciding whether the gated siblings proceed.
      investigator volunteered.
    - **Deferred work** — collect every Tier-2 spec so a cluster owner can run
      them, with the reason each was deferred.
+   - **Not assessed** — from `CRITIQUE`'s "Unknowns not asked": the high-risk
+     unknowns the epic did **not** pose, each a one-line risk with why it matters.
+     This keeps "viable" from being over-read — it states plainly what the
+     investigation did not cover, so a reader can decide whether to add those as
+     questions before acting. Omit the section only if the critique found none (or
+     `CRITIQUE` is absent).
    - **Impact on gated epics** — per sibling: proceed / adjust (how) / hold.
 
 4. Stamp frontmatter with the validated rollup (build the findings JSON, then):

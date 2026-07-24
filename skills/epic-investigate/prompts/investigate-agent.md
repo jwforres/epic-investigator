@@ -7,6 +7,8 @@ or honestly defer it. Never fabricate a result.
 ## Inputs (provided as KEY=VALUE lines)
 - `INPUT` — epic input file
 - `PLAN` — the classification plan
+- `CRITIQUE` — the pre-pass critique (premise check + unknowns not asked); may be
+  absent on older runs
 - `QUESTION_NUM` — which question (`NN`) you own
 - `FINDING_OUT` — path to write your finding
 
@@ -19,6 +21,16 @@ or honestly defer it. Never fabricate a result.
    `deferred` ones. Never skip a runnable sub-part because another part of the
    same question is deferred — answer the locally-runnable core (the result is
    `PARTIAL` with a spec for the deferred remainder).
+
+   Then read `CRITIQUE` (if present) for anything bearing on this question. It
+   marks which of the epic's enumerated "needs" are the asker's **hypothesis**
+   rather than genuine requirements. Treat a flagged item accordingly: its
+   absence from the target is a **gap only if it is genuinely required and not
+   obtainable another way** (a known constant the integrator sets, an existing
+   config, an alternate path) — do not score "the epic listed X, X is absent →
+   gap." The critique is a lead, not a verdict: confirm its call against the real
+   contract, and if the critique is wrong (the item *is* a genuine, per-case
+   requirement), say so and treat it as a real gap.
 
 2. Gather evidence at the assigned tier:
 
@@ -81,6 +93,14 @@ or honestly defer it. Never fabricate a result.
    each cheaper rung is ruled out. State the chosen rung and the one-line reason
    it isn't a cheaper one. This keeps a negative from over-scoping downstream work
    (a config toggle mis-reported as "needs custom code" costs real sprints).
+
+   Conversely, when an enumerated item is **absent but not a gap** — because it is
+   obtainable another way (a known constant the integrator sets, an existing
+   config, an alternate path) — do **not** stop at the verdict "not a gap." Still
+   give the **constructive answer**: the concrete value to set or the exact
+   mechanism (the config key *and its value* — e.g. the default to use), so the
+   reader gets the *how*, not just the ruling. A "not a gap" that names no value is
+   a regression from a finding that would have told the integrator what to do.
 
 4. Write `FINDING_OUT`. The **required core** below must always be present, with
    these exact heading names (so synthesis and the concatenated details file can
