@@ -105,19 +105,47 @@ an item's absence as a gap when the goal is met another way) and the
 not add, remove, or renumber questions. Phases 2 and 4 consume it. Classification
 (Phase 1) does not — its job is tiering, and its input is unchanged.
 
-### Phase 1 · CLASSIFY (1 agent)
+### Phase 1 · CLASSIFY (2 planners + 1 reconciler)
 
-Launch one `classify-agent`:
+The plan is **common-mode**: every investigate agent inherits its sub-part
+decomposition and tiering, so a single planner's stochastic miss (under-tiering a
+check that could be run, dropping an answerable facet) would poison the whole
+run. Sample the plan twice and reconcile.
+
+Launch **two** `classify-agent`s in parallel — same prompt, distinct outputs:
 
 ```
+# planner A
 INPUT=<artifacts-dir>/investigations/<KEY>-input.md
-PLAN_OUT=<artifacts-dir>/investigations/<KEY>-plan.md
-
+PLAN_OUT=<artifacts-dir>/investigations/<KEY>-plan-a.md
+Read skills/epic-investigate/prompts/classify-agent.md and follow it exactly.
+```
+```
+# planner B
+INPUT=<artifacts-dir>/investigations/<KEY>-input.md
+PLAN_OUT=<artifacts-dir>/investigations/<KEY>-plan-b.md
 Read skills/epic-investigate/prompts/classify-agent.md and follow it exactly.
 ```
 
-It writes a plan: each question tagged with its tier and method. Read it to get
-the question count `N`.
+Then launch one `reconcile-plan-agent` to curate the two into the single plan the
+rest of the pipeline reads:
+
+```
+INPUT=<artifacts-dir>/investigations/<KEY>-input.md
+PLAN_A=<artifacts-dir>/investigations/<KEY>-plan-a.md
+PLAN_B=<artifacts-dir>/investigations/<KEY>-plan-b.md
+PLAN_OUT=<artifacts-dir>/investigations/<KEY>-plan.md
+DIVERGENCE_OUT=<artifacts-dir>/investigations/<KEY>-plan-divergence.md
+Read skills/epic-investigate/prompts/reconcile-plan-agent.md and follow it exactly.
+```
+
+It writes the final `<KEY>-plan.md` (same format a single classifier
+produces — downstream is unchanged) plus `<KEY>-plan-divergence.md`, a telemetry
+record of where the two planners disagreed. **Monitor the divergence record
+across runs:** frequent, material divergence means the plan is a real variance
+source (justify a diverse third planner or a plan critic); consistent agreement
+means the second planner is cheap insurance and could later be dropped. Read the
+final plan to get the question count `N`.
 
 ### Phase 2 · INVESTIGATE (N agents, parallel)
 

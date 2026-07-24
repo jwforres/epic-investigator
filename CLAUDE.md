@@ -34,7 +34,9 @@ artifacts/
   investigations/
     <EPIC-KEY>-input.md            # Fetched epic (Scope, questions, ACs)
     <EPIC-KEY>-critique.md         # Pre-pass: premise check + unknowns not asked
-    <EPIC-KEY>-plan.md             # Per-question tier classification
+    <EPIC-KEY>-plan-a.md, -plan-b.md  # Two classifier samples (same prompt)
+    <EPIC-KEY>-plan-divergence.md  # Where the two planners disagreed (telemetry)
+    <EPIC-KEY>-plan.md             # Reconciled per-question tier classification
     <EPIC-KEY>-q01.md … q<NN>.md   # Per-question findings (+ validation)
     <EPIC-KEY>-investigation.md    # The report (attached to the epic)
 ```
