@@ -45,13 +45,21 @@ team deciding whether the gated siblings proceed.
      Note that full per-question evidence lives in the companion
      `<KEY>-investigation-details.md` (attached alongside this report); point
      the reader there **once**, here — do not repeat the pointer per question.
+   - **Questions** — a numbered list of the investigation's questions
+     (`Q01`..`Q<NN>`), each with its verbatim question text (trim only if very
+     long), placed **before** the findings table so a reader knows what every
+     `Q#` means without scrolling ahead. With many questions this is what keeps
+     the table readable — a reader should not have to jump into the per-question
+     detail to learn what `Q07` asked.
    - **Findings table** — one row per question: Q#, answer, tier, confidence,
      one-line basis.
    - **Per-question detail** — pull each finding's evidence through, and
-     **preserve its concrete evidence anchors verbatim**: file:line references,
-     commit hashes, config keys / env vars, endpoints, and the key measured
-     values. Do **not** paraphrase an anchor away — keep the exact
-     `file:line` / config-key / value the finding cited, not a prose gloss of it.
+     **preserve its concrete evidence anchors verbatim** — including the finding's
+     **clickable source links**: keep each markdown link (text **and** URL)
+     intact; never downgrade a source link back to a bare `file:line`. Also keep
+     commit hashes, config keys / env vars, endpoints, and the key measured values
+     exactly as cited. Do **not** paraphrase an anchor away — keep the exact
+     link / `file:line` / config-key / value the finding cited, not a prose gloss.
      Every claim must be verifiable from the report alone. What you leave to the
      details file is the
      *bulk*, not the anchors: raw command-output dumps, the full remedy-rung

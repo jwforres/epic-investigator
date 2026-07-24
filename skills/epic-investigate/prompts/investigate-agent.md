@@ -117,11 +117,22 @@ or honestly defer it. Never fabricate a result.
    - **Confidence:** high | medium | low
 
    ### Evidence
-   <citations: file:line, commit, URL, and/or captured command output in fenced
-   blocks. Every claim in the Answer must trace to something here. These anchors
-   are load-bearing — synthesis carries them verbatim into the report, so cite
+   <citations: source links, commit, URL, and/or captured command output in
+   fenced blocks. Every claim in the Answer must trace to something here — cite
    the specific file:line / config key / endpoint / measured value, not a vague
-   "the docs say".>
+   "the docs say". These anchors are load-bearing; synthesis carries them
+   verbatim into the report.
+
+   **Link every repo source citation.** A `file:line` you read from a cloned repo
+   must be a markdown link whose text stays the plain `path:line` (readable and
+   greppable) and whose target is that exact line at the **commit SHA you read**
+   — permanent; never the branch, which moves:
+     - GitHub: `[<path>:<start>-<end>](https://github.com/<org>/<repo>/blob/<sha>/<path>#L<start>-L<end>)`
+     - GitLab: `[<path>:<start>-<end>](https://<host>/<org>/<repo>/-/blob/<sha>/<path>#L<start>-<end>)`
+   Derive the host from the repo you actually read (`github.com`, or the GitLab
+   host the repo lives on) and record the repo + SHA once at the top of Evidence
+   so every link is unambiguous. Non-repo anchors are unchanged: a doc/web URL is
+   already a link; config keys, endpoints, and measured values stay inline text.>
 
    ### Deferred spec  (only if a sub-part's tier == deferred)
    <exact steps/thresholds to run the real check on a cluster or with containers>
