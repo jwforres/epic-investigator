@@ -65,13 +65,24 @@ survives context compression — never inline `cat`/`echo`/`mkdir`.
 
 ## Jira Integration
 
-- **Read:** `scripts/fetch_epic.py` fetches an Investigation epic by key (or
-  ingests a local epic-task file via `--from-file`).
-- **Write-back:** `scripts/attach_report.py` attaches the report under the
-  well-known name `investigation-report.md` (replacing any prior copy) and
-  applies a status label (`investigation-complete` / `-blocked` / `-error`).
+Jira I/O lives **outside the skill**, in a CI pre-step and post-step. The skill
+reads a pre-fetched input file and writes a report to disk; it never holds Jira
+credentials, so the phases that clone and read untrusted upstream source have no
+`JIRA_TOKEN` in their environment to leak. The report's frontmatter is the handoff
+between the steps.
 
-Required environment variables:
+- **Read (pre-step):** `scripts/fetch_epic.py` fetches an Investigation epic by
+  key to `<artifacts-dir>/investigations/<KEY>-input.md`. Its `--from-file` form
+  ingests a local epic-task file and needs no credentials, so the skill may run
+  that form itself.
+- **Write-back (post-step):** `scripts/attach_report.py` attaches the report under
+  the well-known name `investigation-report.md` (replacing any prior copy) and
+  applies a status label (`investigation-complete` / `-blocked` / `-error`). It
+  validates the report's frontmatter and refuses to publish an `in_progress`,
+  inconsistent, or wrong-epic report.
+
+Required environment variables — for the pre/post steps only, **not** for the
+skill:
 
 ```
 JIRA_SERVER=https://your-site.atlassian.net

@@ -10,7 +10,7 @@ as its own CI job — one invocation per Investigation epic.
 
 ## How it works
 
-The `epic-investigate` skill runs five phases per epic:
+The `epic-investigate` skill runs four phases per epic:
 
 1. **Classify** — extract the numbered questions and tag each with the cheapest
    evidence tier that can answer it (desk / local-process / deferred).
@@ -18,8 +18,31 @@ The `epic-investigate` skill runs five phases per epic:
 3. **Validate** — an adversarial pass downgrades any answer its evidence doesn't
    support.
 4. **Synthesize** — roll findings into a report + a go/no-go for the siblings.
-5. **Publish** — attach the report to the epic as `investigation-report.md` and
-   set a status label.
+
+Fetching the epic and publishing the report are **CI steps outside the skill**
+(see the credential boundary below).
+
+### Credential boundary
+
+The skill never touches Jira. Jira I/O is split into a pre-step and a post-step
+so the phases that clone and read untrusted upstream source never have
+`JIRA_TOKEN` in their environment:
+
+```bash
+# 1. pre-step (needs Jira creds) — fetch the epic to disk
+python3 scripts/fetch_epic.py RHAISTRAT-1234-E001
+
+# 2. the skill (no creds) — investigate and write the report to disk
+claude -p "/epic-investigate RHAISTRAT-1234-E001"
+
+# 3. post-step (needs Jira creds) — publish the report
+python3 scripts/attach_report.py RHAISTRAT-1234-E001 \
+    --report artifacts/investigations/RHAISTRAT-1234-E001-investigation.md
+```
+
+The report's frontmatter is the handoff. Step 3 reads it for status and
+recommendation, refuses an `in_progress` or internally inconsistent report, and
+refuses to attach a report whose `jira_key` doesn't match the key it was given.
 
 ### Evidence tiers
 
@@ -36,15 +59,20 @@ Tier-1 perf numbers are directional, never production benchmarks.
 ## Usage
 
 ```bash
-# From Jira (CI path)
+# From Jira (CI path) — run the fetch pre-step first, then:
 claude
 > /epic-investigate RHAISTRAT-1234-E001
 
-# From a local epic-task file (dev path), no Jira write-back
-> /epic-investigate --from-file ../epic-creator/artifacts/epic-tasks/RHAISTRAT-1234-E001.md --no-jira
+# From a local epic-task file (dev path) — no pre-step, no credentials at all
+> /epic-investigate --from-file ../epic-creator/artifacts/epic-tasks/RHAISTRAT-1234-E001.md
 ```
 
-Set `JIRA_SERVER`, `JIRA_USER`, `JIRA_TOKEN` for Jira read/write-back.
+The Jira path expects `artifacts/investigations/<KEY>-input.md` to already exist;
+the skill stops and says so if the fetch step hasn't run. `--from-file` reads a
+local file, so the skill ingests it directly.
+
+Set `JIRA_SERVER`, `JIRA_USER`, `JIRA_TOKEN` for the fetch and publish steps
+only — not for the skill itself.
 
 ## Layout
 
