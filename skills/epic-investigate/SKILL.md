@@ -37,16 +37,15 @@ container/cluster, degrade to Tier 2 and record *why*. Never fabricate a result.
 
 ## Setup
 
-**This skill never touches Jira.** It reads an epic that has already been fetched
-to disk and writes its report to disk. Fetching by key and publishing back are CI
-steps that run *outside* this skill, so the phases that read untrusted upstream
-source never hold Jira credentials. See the README for the three-step CI shape.
+**This skill never touches Jira.** It reads an epic already fetched to disk and
+writes its report to disk. Fetching by key and publishing back are separate steps
+run outside this skill; do not attempt either, and do not read or use Jira
+credentials. See the README for how the pieces fit together.
 
 Parse `$ARGUMENTS` for:
 - Explicit epic keys (e.g. `RHAISTRAT-1234-E001`) — used to locate the
-  pre-fetched input file, not to query Jira
-- `--from-file <path>` — ingest a local epic-task file (the credential-free
-  local-dev path)
+  pre-fetched input file
+- `--from-file <path>` — ingest a local epic-task file
 - `--artifacts-dir <path>` — the artifacts root, defaults to `artifacts`. All
   outputs go under `<artifacts-dir>/investigations/`. In the paths below,
   `<artifacts-dir>` is this resolved value.
@@ -73,18 +72,10 @@ and note the absence in their findings.
 ### Resolve the epic input(s)
 
 For each key, the input file must **already exist** at
-`<artifacts-dir>/investigations/<KEY>-input.md` — the CI pre-step writes it:
+`<artifacts-dir>/investigations/<KEY>-input.md`. If it is missing, stop and
+report that — do **not** try to fetch it yourself.
 
-```bash
-# CI pre-step, NOT run by this skill (it needs Jira credentials)
-python3 scripts/fetch_epic.py <KEY> --artifacts-dir <artifacts-dir>
-```
-
-If the input file is missing, stop and report that the fetch step has not run.
-Do **not** try to fetch it yourself.
-
-For `--from-file`, ingest the local epic-task file — this path reads a file and
-needs no credentials, so the skill does it directly:
+For `--from-file`, ingest the local epic-task file:
 
 ```bash
 python3 scripts/fetch_epic.py --from-file <path> --artifacts-dir <artifacts-dir>
@@ -241,29 +232,14 @@ the full proof behind the report's per-question summaries. If the investigation
 produced no findings (e.g. blocked/errored), it writes nothing and warns; that
 is not a failure — the report still stands on its own.
 
-### Publishing is not a phase of this skill
-
-The report and its companion details file are the deliverable; getting them onto
-the epic is the CI post-step, which holds the Jira credentials this skill does
-not:
-
-```bash
-# CI post-step, NOT run by this skill
-python3 scripts/attach_report.py <KEY> \
-    --report <artifacts-dir>/investigations/<KEY>-investigation.md
-```
-
-That step reads the report's own frontmatter for status and recommendation,
-refuses an `in_progress` or internally inconsistent report, and refuses to attach
-a report whose `jira_key`/`epic_id` does not match the key it was given. Your job
-ends when the report is on disk with correct frontmatter — **that frontmatter is
-what the publish step trusts**, so stamp it accurately (Phase 4) even on a failed
-or partial run.
-
 ## Teardown
 
-After all epics finish, print a one-line summary per epic so the CI step that
-publishes knows what it is publishing: `<KEY> status=<…> recommendation=<…>
-resolved=<n>/<total> deferred=<n> report=<path>`.
+Your job ends with the report and its companion details file on disk. The
+frontmatter is read by tooling outside this run, so stamp it accurately (Phase 4)
+even on a failed or partial run — a wrong `status` is worse than an honest
+`error`.
+
+After all epics finish, print a one-line summary per epic: `<KEY> status=<…>
+recommendation=<…> resolved=<n>/<total> deferred=<n> report=<path>`.
 
 $ARGUMENTS

@@ -66,9 +66,8 @@ survives context compression — never inline `cat`/`echo`/`mkdir`.
 ## Jira Integration
 
 Jira I/O lives **outside the skill**, in a CI pre-step and post-step. The skill
-reads a pre-fetched input file and writes a report to disk; it never holds Jira
-credentials, so the phases that clone and read untrusted upstream source have no
-`JIRA_TOKEN` in their environment to leak. The report's frontmatter is the handoff
+reads a pre-fetched input file and writes a report to disk; it holds no Jira
+credentials and issues no Jira calls. The report's frontmatter is the handoff
 between the steps.
 
 - **Read (pre-step):** `scripts/fetch_epic.py` fetches an Investigation epic by

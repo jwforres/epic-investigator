@@ -24,9 +24,8 @@ Fetching the epic and publishing the report are **CI steps outside the skill**
 
 ### Credential boundary
 
-The skill never touches Jira. Jira I/O is split into a pre-step and a post-step
-so the phases that clone and read untrusted upstream source never have
-`JIRA_TOKEN` in their environment:
+The skill never touches Jira. Jira I/O is split into a pre-step and a post-step,
+so only those steps need `JIRA_TOKEN`:
 
 ```bash
 # 1. pre-step (needs Jira creds) — fetch the epic to disk
