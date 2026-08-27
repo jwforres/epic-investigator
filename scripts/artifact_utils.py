@@ -143,6 +143,29 @@ SCHEMAS = {
             "required": False,
             "default": None,
         },
+        # Jira keys reached by outward `blocks` links from an Investigation.
+        # Resolved by the credentialed fetch step so the skill never has to
+        # infer topology from prose.
+        "gated_epics": {
+            "type": "list",
+            "required": False,
+            "default": [],
+        },
+        # Descriptive data for the same Jira keys. This enriches synthesis but
+        # never defines membership; gated_epics remains authoritative.
+        "gated_epic_context": {
+            "type": "list",
+            "required": False,
+            "default": [],
+        },
+        # epic-creator's logical ID for this Jira epic. Jira-backed inputs keep
+        # `epic_id` as the Jira key because that is the skill invocation/report
+        # identity, while this value is used to validate sibling `gated_by`.
+        "gating_id": {
+            "type": "string",
+            "required": False,
+            "default": None,
+        },
         "gate_failure_impact": {
             "type": "dict",
             "required": False,

@@ -23,6 +23,8 @@ import os
 import re
 import sys
 
+import yaml
+
 from artifact_utils import (
     read_frontmatter_validated,
     write_frontmatter,
@@ -33,6 +35,110 @@ import jira_utils
 DEFAULT_ARTIFACTS_DIR = "artifacts"
 INVESTIGATIONS_SUBDIR = "investigations"
 _STRAT_RE = re.compile(r"RHAISTRAT-\d+")
+
+
+def _blocked_keys(issue):
+    """Jira keys reached by outward ``blocks`` links, in Jira order."""
+    keys = []
+    for link in (issue.get("fields") or {}).get("issuelinks") or []:
+        outward = link.get("outwardIssue")
+        if outward and (link.get("type") or {}).get("outward") == "blocks":
+            keys.append(outward["key"])
+    return keys
+
+
+def _attached_frontmatter(server, user, token, issue):
+    """Return epic-creator's attached frontmatter, or None when unavailable."""
+    for attachment in (issue.get("fields") or {}).get("attachment") or []:
+        if not str(attachment.get("filename", "")).endswith("-frontmatter.yaml"):
+            continue
+        try:
+            content = jira_utils.download_attachment(
+                attachment["content"], user, token, server=server
+            )
+            parsed = yaml.safe_load(content) or {}
+        except (KeyError, OSError, ValueError, yaml.YAMLError) as exc:
+            print(
+                f"WARNING: could not read {issue.get('key')} frontmatter: {exc}",
+                file=sys.stderr,
+            )
+            return None
+        if isinstance(parsed, dict):
+            return parsed
+        print(
+            f"WARNING: {issue.get('key')} frontmatter is not a mapping",
+            file=sys.stderr,
+        )
+        return None
+    return None
+
+
+def _gate_ids(frontmatter):
+    """Normalize epic-creator's comma-separated ``gated_by`` value."""
+    if not frontmatter:
+        return []
+    value = frontmatter.get("gated_by")
+    if isinstance(value, list):
+        return [str(item).strip() for item in value if str(item).strip()]
+    if not value:
+        return []
+    return [part.strip() for part in str(value).split(",") if part.strip()]
+
+
+def _resolve_gated_epics(server, user, token, issue, gating_id):
+    """Resolve membership from Jira links and retain advisory sibling context."""
+    keys = _blocked_keys(issue)
+    context = []
+    if not keys:
+        print(
+            f"WARNING: {issue.get('key')} has no outward blocks links; "
+            "gated_epics will be empty",
+            file=sys.stderr,
+        )
+        return [], []
+
+    for key in keys:
+        try:
+            sibling = jira_utils.get_issue(
+                server, user, token, key,
+                fields=["summary", "description", "attachment"]
+            )
+        except Exception as exc:  # noqa: BLE001 - advisory lookup must not abort the fetch
+            print(
+                f"WARNING: could not fetch {key} gated_by metadata: {exc}; "
+                "using the Jira blocks relationship",
+                file=sys.stderr,
+            )
+            context.append({"jira_key": key, "context_unavailable": True})
+            continue
+        fields = sibling.get("fields") or {}
+        sibling_frontmatter = _attached_frontmatter(server, user, token, sibling)
+        entry = {
+            "jira_key": key,
+            "summary": fields.get("summary") or key,
+            "description": jira_utils.adf_to_markdown(fields.get("description"))
+            if fields.get("description")
+            else "",
+        }
+        if sibling_frontmatter is None:
+            print(
+                f"WARNING: {key} is blocked by {issue.get('key')}, but its "
+                "gated_by metadata is unavailable; using the Jira blocks relationship",
+                file=sys.stderr,
+            )
+        else:
+            gates = _gate_ids(sibling_frontmatter)
+            entry["gated_by"] = gates
+            if sibling_frontmatter.get("gate_failure_impact") is not None:
+                entry["gate_failure_impact"] = sibling_frontmatter["gate_failure_impact"]
+            if gating_id and gating_id not in gates:
+                print(
+                    f"WARNING: {key} is blocked by {issue.get('key')}, but gated_by "
+                    f"does not contain {gating_id}; using the Jira blocks relationship",
+                    file=sys.stderr,
+                )
+        context.append(entry)
+    return keys, context
 
 
 def _derive_parent_strat(issue_fields, override):
@@ -55,7 +161,7 @@ def _fetch_from_jira(key, parent_override):
     issue = jira_utils.get_issue(
         server, user, token, key,
         fields=["summary", "description", "labels", "parent",
-                "priority", "components"])
+                "priority", "components", "issuelinks", "attachment"])
     f = issue.get("fields", {})
 
     parent_strat = _derive_parent_strat(f, parent_override)
@@ -72,6 +178,18 @@ def _fetch_from_jira(key, parent_override):
     body = jira_utils.adf_to_markdown(f.get("description")) \
         if f.get("description") else ""
 
+    frontmatter = _attached_frontmatter(server, user, token, issue)
+    gating_id = (frontmatter or {}).get("epic_id")
+    if not gating_id:
+        print(
+            f"WARNING: {key} has no epic-creator epic_id; sibling gated_by "
+            "metadata cannot be cross-checked",
+            file=sys.stderr,
+        )
+    gated_epics, gated_epic_context = _resolve_gated_epics(
+        server, user, token, issue, str(gating_id) if gating_id else None
+    )
+
     meta = {
         "epic_id": key,
         "title": f.get("summary", key),
@@ -81,6 +199,9 @@ def _fetch_from_jira(key, parent_override):
         "team": "unknown",
         "type": "Investigation",
         "priority": priority,
+        "gating_id": gating_id,
+        "gated_epics": gated_epics,
+        "gated_epic_context": gated_epic_context,
     }
     return meta, body
 
@@ -94,7 +215,8 @@ def _ingest_file(path):
         sys.exit(2)
     # Keep only the epic-task fields we re-validate against on write.
     keep = ("epic_id", "title", "parent_strat", "jira_key", "component",
-            "team", "type", "priority")
+            "team", "type", "priority", "gating_id", "gated_epics",
+            "gated_epic_context")
     return {k: meta[k] for k in keep if k in meta}, body
 
 

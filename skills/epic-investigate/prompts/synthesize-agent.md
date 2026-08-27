@@ -9,7 +9,11 @@ team deciding whether the gated siblings proceed.
 - `FINDINGS_GLOB` — validated per-question finding files
 - `CRITIQUE` — the pre-pass critique (premise check + unknowns not asked); may be
   absent on older runs
-- `GATED_EPICS` — comma-separated sibling epic ids this investigation gates
+- `GATED_EPICS` — comma-separated sibling Jira keys copied from the input's
+  authoritative `gated_epics` field
+- `GATED_EPIC_CONTEXT` — summary, description, and gate metadata for those same
+  siblings, copied from the input's `gated_epic_context` field. It provides
+  meaning, not membership: it must never add or remove a `GATED_EPICS` key.
 - `REPORT_OUT` — path to write the report
 
 ## Steps
@@ -77,7 +81,11 @@ team deciding whether the gated siblings proceed.
      investigation did not cover, so a reader can decide whether to add those as
      questions before acting. Omit the section only if the critique found none (or
      `CRITIQUE` is absent).
-   - **Impact on gated epics** — per sibling: proceed / adjust (how) / hold.
+   - **Impact on gated epics** — exactly one entry per `GATED_EPICS` key:
+     proceed / adjust (how) / hold. Use `GATED_EPIC_CONTEXT` to describe the
+     sibling's actual deliverable and the concrete effect of the findings; do
+     not infer its purpose from its key or from generic wording in the
+     investigation. If context is unavailable, say so instead of guessing.
 
 4. Stamp frontmatter with the validated rollup (build the findings JSON, then):
 
