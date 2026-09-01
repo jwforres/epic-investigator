@@ -100,6 +100,15 @@ def main():
               f"questions; incomplete runs must be published as 'error'/'blocked', "
               f"not 'complete'.", file=sys.stderr)
         sys.exit(2)
+    findings = meta.get("findings", [])
+    if status == "complete" and len(findings) != resolved:
+        print(f"ERROR: status=complete but findings rollup has {len(findings)} "
+              f"entries for {resolved} resolved questions.", file=sys.stderr)
+        sys.exit(2)
+    if status == "complete" and not meta.get("run_started"):
+        print("ERROR: status=complete but run_started is missing.",
+              file=sys.stderr)
+        sys.exit(2)
 
     with open(args.report, encoding="utf-8") as fh:
         content = fh.read()

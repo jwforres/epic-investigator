@@ -222,6 +222,19 @@ REPORT_OUT=<artifacts-dir>/investigations/<KEY>-investigation.md
 Read skills/epic-investigate/prompts/synthesize-agent.md and follow it exactly.
 ```
 
+Then stamp the fields that must be copied exactly rather than synthesized:
+
+```bash
+python3 scripts/finalize_report.py \
+    --report <artifacts-dir>/investigations/<KEY>-investigation.md \
+    --findings-glob '<artifacts-dir>/investigations/<KEY>-q*.md' \
+    --state tmp/investigate-state.yaml
+```
+
+This derives the machine-readable findings rollup from the validated finding
+files and copies the actual run start time from state. Treat failure as a run
+error; do not publish a complete report with incomplete metadata.
+
 ### Phase 4b · BUILD DETAILS
 
 Concatenate the validated per-question findings into the companion evidence

@@ -25,12 +25,16 @@ team deciding whether the gated siblings proceed.
      was actually run/read**. A clean `go` is not available if any gating
      question's deciding evidence is only provisional (a `PARTIAL`/`DEFERRED`
      answer whose gating check was not executed) — the most you can say then is
-     `go-with-changes` with the unrun check named as a condition.
+     `go-with-changes` with the unrun check named as a condition only when the
+     existing evidence already determines the implementation direction.
    - `go-with-changes` — siblings can proceed but a finding forces a documented
      adjustment (map to the epic's `gate_failure_impact.action` /
      `fallback_approach` when present), or a gating answer is provisional and its
-     deciding check must be run before production sign-off. Spell out the change
-     or the condition.
+     deciding check must be run before production sign-off. This applies when
+     the check confirms a direction the evidence already establishes. If the
+     unrun check determines which architecture or outcome is correct, use
+     `no-go` and hold the affected siblings instead. Spell out the change or
+     condition.
    - `no-go` — a gating question came back NO, or a question the siblings depend
      on is unresolved/`DEFERRED` such that proceeding is unsafe.
    Deferred-but-non-blocking questions do not force `no-go`; call them out as
@@ -47,8 +51,9 @@ team deciding whether the gated siblings proceed.
      reader should not have to reconstruct "N of M answers are still unproven"
      from the rows.
      Note that full per-question evidence lives in the companion
-     `<KEY>-investigation-details.md` (attached alongside this report); point
-     the reader there **once**, here — do not repeat the pointer per question.
+     `investigation-details.md` (attached alongside this report); point the
+     reader there **once**, here — do not repeat the pointer per question or
+     claim that individual question files are attached.
    - **Questions** — a numbered list of the investigation's questions
      (`Q01`..`Q<NN>`), each with its verbatim question text (trim only if very
      long), placed **before** the findings table so a reader knows what every
@@ -64,17 +69,18 @@ team deciding whether the gated siblings proceed.
      commit hashes, config keys / env vars, endpoints, and the key measured values
      exactly as cited. Do **not** paraphrase an anchor away — keep the exact
      link / `file:line` / config-key / value the finding cited, not a prose gloss.
-     Every claim must be verifiable from the report alone. What you leave to the
-     details file is the
-     *bulk*, not the anchors: raw command-output dumps, the full remedy-rung
-     elimination prose, and step-by-step deferred specs. Also carry each
+     Keep this to a compact decision-relevant summary. What you leave to the
+     details file is the *bulk*: raw command-output dumps, full supporting prose,
+     remedy-rung elimination, and step-by-step deferred specs. Preserve only the
+     anchors needed to substantiate the summary. Also carry each
      finding's `### Validation` verdict through — its verdict word (`upheld`,
      `downgraded`, or `rejected`) **and** the validator's one-line reason, which
      is where any caveat on an otherwise-`upheld` finding lives. Surfacing it
      makes a caveat that an adversarial check forced distinguishable from one the
      investigator volunteered.
-   - **Deferred work** — collect every Tier-2 spec so a cluster owner can run
-     them, with the reason each was deferred.
+   - **Deferred work** — name each Tier-2 check, its pass criterion, and why it
+     was deferred. Leave the full runnable procedure in
+     `investigation-details.md`.
    - **Not assessed** — from `CRITIQUE`'s "Unknowns not asked": the high-risk
      unknowns the epic did **not** pose, each a one-line risk with why it matters.
      This keeps "viable" from being over-read — it states plainly what the
@@ -85,9 +91,13 @@ team deciding whether the gated siblings proceed.
      proceed / adjust (how) / hold. Use `GATED_EPIC_CONTEXT` to describe the
      sibling's actual deliverable and the concrete effect of the findings; do
      not infer its purpose from its key or from generic wording in the
-     investigation. If context is unavailable, say so instead of guessing.
+     investigation. If context is unavailable, say so instead of guessing. When
+     a sibling's direction depends on a central provisional claim, say `hold`
+     (or `proceed only after <specific check>` when the direction is already
+     established); never prescribe unconditional scope or architecture from an
+     absence that has not been verified.
 
-4. Stamp frontmatter with the validated rollup (build the findings JSON, then):
+4. Stamp the synthesized frontmatter fields:
 
    ```bash
    python3 scripts/frontmatter.py set <REPORT_OUT> \
@@ -119,6 +129,8 @@ team deciding whether the gated siblings proceed.
      for lack of evidence rather than negative evidence.
    - `evidence_tiers_used`, `gated_epics`, and list fields take JSON arrays.
    - Omit `jira_key` for `--from-file` runs without a real key.
+   - Do not invent `findings` or `run_started`. The orchestrator stamps those
+     deterministically after synthesis with `scripts/finalize_report.py`.
 
 ## Rules
 - The recommendation must follow from the validated findings — not the original
