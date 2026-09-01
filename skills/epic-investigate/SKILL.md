@@ -83,10 +83,14 @@ python3 scripts/fetch_epic.py --from-file <path> --artifacts-dir <artifacts-dir>
 
 Either way you now have `<artifacts-dir>/investigations/<KEY>-input.md`. Read it.
 The body holds the Scope (numbered questions), Acceptance Criteria, and HLR
-Traceability.
-
-Identify the **gated sibling epics**: the epics whose `gated_by` points at this
-one (from the parent decomposition), or as named in the epic body. Record them.
+Traceability. Its `gated_epics` frontmatter field is the authoritative list of
+sibling Jira keys this investigation gates. The credentialed fetch step derives
+it from outward Jira `blocks` links and warns about inconsistent sibling
+`gated_by` metadata. Use this field exactly; never reconstruct topology from the
+body prose. `gated_epic_context` contains summaries, descriptions, and relevant
+gate metadata for those same keys; use it to explain each sibling's impact, but
+never use it to add or remove `gated_epics` members. An empty `gated_epics` list
+means no gated siblings were resolved.
 
 ## Per-epic pipeline
 
@@ -212,10 +216,24 @@ frontmatter (status, recommendation, rollup counts) via
 INPUT=<artifacts-dir>/investigations/<KEY>-input.md
 FINDINGS_GLOB=<artifacts-dir>/investigations/<KEY>-q*.md
 CRITIQUE=<artifacts-dir>/investigations/<KEY>-critique.md
-GATED_EPICS=<comma-separated sibling ids>
+GATED_EPICS=<comma-separated values from INPUT gated_epics>
+GATED_EPIC_CONTEXT=<gated_epic_context from INPUT>
 REPORT_OUT=<artifacts-dir>/investigations/<KEY>-investigation.md
 Read skills/epic-investigate/prompts/synthesize-agent.md and follow it exactly.
 ```
+
+Then stamp the fields that must be copied exactly rather than synthesized:
+
+```bash
+python3 scripts/finalize_report.py \
+    --report <artifacts-dir>/investigations/<KEY>-investigation.md \
+    --findings-glob '<artifacts-dir>/investigations/<KEY>-q*.md' \
+    --state tmp/investigate-state.yaml
+```
+
+This derives the machine-readable findings rollup from the validated finding
+files and copies the actual run start time from state. Treat failure as a run
+error; do not publish a complete report with incomplete metadata.
 
 ### Phase 4b · BUILD DETAILS
 

@@ -67,8 +67,13 @@ claude
 ```
 
 The Jira path expects `artifacts/investigations/<KEY>-input.md` to already exist;
-the skill stops and says so if the fetch step hasn't run. `--from-file` reads a
-local file, so the skill ingests it directly.
+the skill stops and says so if the fetch step hasn't run. The fetcher resolves
+the input's `gated_epics` from outward Jira `blocks` links and uses sibling
+`gated_by` metadata only as a consistency check. A mismatch prints a warning and
+keeps the live Jira relationship. The same sibling reads populate
+`gated_epic_context` with summary, description, and relevant gate metadata so
+the report can explain per-sibling impact without guessing. Context never changes
+membership. `--from-file` preserves both fields from a local file.
 
 Set `JIRA_SERVER`, `JIRA_USER`, `JIRA_TOKEN` for the fetch and publish steps
 only — not for the skill itself.
